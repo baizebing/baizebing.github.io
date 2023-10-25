@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <meta name="keywords" content="GPU Intel Performance">
+  
+  <meta name="author" content="Cris Bai" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      Lecture 1. Introduction of Computational Photography 
+      
+      
+      |
+    
+     Cris Bai&#39;s Blog
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Oranges</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="/plugins/mathjax/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">Lecture 1. Introduction of Computational Photography</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+          2023-10-25 18:35:41
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/computational-photography/" title="computational photography">
+                    #computational photography
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="相机的历史"><a href="#相机的历史" class="headerlink" title="相机的历史"></a>相机的历史</h2><p>相机的发展历史可以追溯到公元前，当时的“照相暗盒”（“暗室”）便是如今的照相机的原型。照相暗盒是一种利用穿过小孔进入暗室的光束来投射物体颠倒图像的光学设备。该设备采用的机制与<strong>针孔照相机</strong>几乎相同。</p>
+<p>从16世纪起，照相机最终发展为一种集镜头、暗箱和反射镜于一体的设备。1839年，法国人达盖尔发明了<strong>银版（银板摄影法）照相机</strong>。约30年后， Maddox在英国发明了<strong>干版</strong>。正是有了这些发明，手绘物体的时代宣告结束，使用感光材料记录所拍摄图像的照相机时代正式开始。</p>
+<p>在19世纪后半叶，照相机的体积和重量逐渐减小，价格也逐渐下降，使得普通人也能够负担得起。1925年，柯达公司推出了世界上第一台120<strong>胶卷相机</strong>，这标志着照相机真正走向了普及。</p>
+<p>20世纪60年代，数码技术开始应用于照相机。1975年，柯达公司推出了世界上第一台<strong>数码相机</strong>。虽然当时的数码相机体积庞大、价格昂贵，但这标志着照相机技术进入了新的时代。</p>
+<p>20世纪90年代，数码相机的体积和价格逐渐下降，逐渐取代了传统的胶片相机。2000年后，<strong>智能手机</strong>开始配备摄像头，这使得人们可以随时随地拍摄照片和视频。</p>
+<p>如今，相机已经成为人们日常生活中不可或缺的工具。人们可以用它记录生活中的点点滴滴，分享自己的生活和感受。</p>
+<p>相机的发展经历了以下几个阶段：</p>
+<ul>
+<li>早期阶段（公元前-19世纪）：照相机的原型出现，但由于感光材料的限制，成像效果不佳。</li>
+<li>成熟阶段（19世纪-20世纪60年代）：照相机的体积和重量逐渐减小，价格也逐渐下降，使得普通人也能够负担得起。</li>
+<li>数码化阶段（20世纪60年代至今）：数码技术开始应用于照相机，使得相机的体积、重量和价格进一步下降，成像效果也得到了大幅提升。</li>
+</ul>
+<p>相机的发展不仅改变了人们记录和分享信息的方式，也推动了摄影艺术的发展。</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/cvy7Qlp4A2k?si=ARQsSJTDqtJez0_V" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+<h3 id="从手机广告看相机的进化"><a href="#从手机广告看相机的进化" class="headerlink" title="从手机广告看相机的进化"></a>从手机广告看相机的进化</h3><iframe width="560" height="315" src="https://www.youtube.com/embed/U7tmW1c1sr8?si=D_eTo7c3kjtJ8lxt" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+<h2 id="什么是计算摄影"><a href="#什么是计算摄影" class="headerlink" title="什么是计算摄影"></a>什么是计算摄影</h2><p>计算摄影涉及到的技术领域包括计算机视觉、计算机图形学甚至一部分光学和传感器学。</p>
+<ul>
+<li>计算机视觉的部分更偏重与对图像的理解，如何去检测、分类、提取更多的信息。</li>
+<li>计算机图形学的部分更偏重于对图像的重建，如何对被摄物体进行数学建模，并将其重建和恢复出来。</li>
+<li>光学传感器是摄影的基石，如何设计光学系统来保证最大限度的保留光学信息，提高信噪比，对于摄影学至关重要。</li>
+</ul>
+<img src="/2023/10/25/Introduction-of-Computational-Photography/cgcvcp.png" class="" title="relationship">
+
+<p>现代数码相机的组成和传统机械胶片相机并无本质区别。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>传统相机</th>
+<th>数码相机</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>光学系统</td>
+<td>几乎相同</td>
+<td>几乎相同</td>
+</tr>
+<tr>
+<td>感光元件</td>
+<td>胶片</td>
+<td>CMOS&#x2F;CCD</td>
+</tr>
+<tr>
+<td>呈现</td>
+<td>化学显影</td>
+<td>数字后处理</td>
+</tr>
+</tbody></table>
+<h2 id="优化和增强数字摄影"><a href="#优化和增强数字摄影" class="headerlink" title="优化和增强数字摄影"></a>优化和增强数字摄影</h2><h3 id="风格化"><a href="#风格化" class="headerlink" title="风格化"></a>风格化</h3><p>采用计算摄影技术，可以使照片呈现不同的风格（滤镜）。</p>
+<img src="/2023/10/25/Introduction-of-Computational-Photography/Photographic-Look.png" class="">
+
+<p><a target="_blank" rel="noopener" href="http://people.csail.mit.edu/soonmin/CV/bw_photo_ring_toss_standard.pdf">Two-scale Tone Management for Photographic Look (Siggraph 2006)</a></p>
+<h3 id="高动态范围成像-HDR"><a href="#高动态范围成像-HDR" class="headerlink" title="高动态范围成像(HDR)"></a>高动态范围成像(HDR)</h3><p>由于感光元件的动态范围相对人眼要小得多，在大光比（明暗对比强烈）环境中拍摄会丢失图像细节，产生欠曝或过曝的现象。通过HDR技术，可以尽可能的恢复原始场景的亮度信息，保留更多细节。</p>
+<p>最常见的技术使通过多帧合成来产生高动态范围照片。<br>例如输入：<br><img src=https://docs.opencv.org/3.4/exposures.jpg></p>
+<p>合成结果为：<br><img src=https://docs.opencv.org/3.4/fusion_mertens.jpg></p>
+<p><a target="_blank" rel="noopener" href="https://docs.opencv.org/3.4/d2/df0/tutorial_py_hdr.html">使用OpenCV合成HDR图片</a></p>
+<h3 id="动作放大"><a href="#动作放大" class="headerlink" title="动作放大"></a>动作放大</h3><p>让微弱的运动更加明显。这是一篇来自SIGGRAPH 2013的论文。</p>
+<p><a target="_blank" rel="noopener" href="http://people.csail.mit.edu/nwadhwa/phase-video/">Phase-Based Video Motion Processing</a></p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/W7ZQ-FG7Nvw?si=HjSOIIS4zoGHXXME" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+<h3 id="合成拟真图片"><a href="#合成拟真图片" class="headerlink" title="合成拟真图片"></a>合成拟真图片</h3><p>换脸？一致风格迁移？</p>
+<img src=https://vcg.seas.harvard.edu/content/3-publications/20100701-multi-scale-image-harmonization/2010_multiscale_harmonization.png>
+
+<p><a target="_blank" rel="noopener" href="https://vcg.seas.harvard.edu/publications/multi-scale-image-harmonization">Multi-scale Image Harmonization</a></p>
+<h3 id="处理多张图片"><a href="#处理多张图片" class="headerlink" title="处理多张图片"></a>处理多张图片</h3><p>自动拼接技术合成超广角图片</p>
+<img src=https://github.com/AVINASH793/Panoramic-Image-Stitching-using-invariant-features/raw/master/Result/tajm_report.JPG>
+
+<h3 id="处理很多张图片"><a href="#处理很多张图片" class="headerlink" title="处理很多张图片"></a>处理很多张图片</h3><p>时间序列视频生成：</p>
+<p><a target="_blank" rel="noopener" href="https://grail.cs.washington.edu/projects/timelapse/">Time-lapse Mining from Internet Photos</a></p>
+<img src=https://grail.cs.washington.edu/projects/timelapse/teaser2.jpg>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/wptzVm0tngc?si=z6G1cbfiOVMCO63h" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+<p>大规模3D重建：</p>
+<p><a target="_blank" rel="noopener" href="https://grail.cs.washington.edu/rome/">Building Rome in A Day</a></p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/qYaU1GeEiR8?si=GUuppJd6mooJrgUK" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+<h3 id="深度视觉"><a href="#深度视觉" class="headerlink" title="深度视觉"></a>深度视觉</h3><p>光场相机：Lytro</p>
+<img src=https://upload.wikimedia.org/wikipedia/commons/6/63/Lytro_ILLUM_2015_CP%2B.jpg>
+
+<p>可以同时保存不同的景深信息，并且可以在后期时自由选择景深范围。</p>
+<img src=https://upload.wikimedia.org/wikipedia/commons/e/eb/Lytro_Illum_light_field_camera_demonstration.jpg>
+
+<p>原理：微透镜阵列</p>
+<img src=https://cmte.ieee.org/futuredirections/wp-content/uploads/sites/44/2020/04/light-field-cameras-4.jpg>
+
+<p>论文：<br><a target="_blank" rel="noopener" href="https://hal.science/hal-02551481/document">Light Field Photography with a Hand-held Plenoptic Camera</a></p>
+<iframe src="//player.bilibili.com/player.html?aid=480413962&bvid=BV1zT411m7UX&cid=968274936&p=1" allowfullscreen="allowfullscreen" width="100%" height="500" scrolling="no" frameborder="0" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts"> </iframe>
+
+<h3 id="光圈编码"><a href="#光圈编码" class="headerlink" title="光圈编码"></a>光圈编码</h3><p>可以用来测量深度并重对焦</p>
+<p>常见的镜头光圈孔径为多边形：</p>
+<img src=https://groups.csail.mit.edu/graphics/CodedAperture/source_imgs/normal_kernel_rot.jpg>
+
+<p>可以在光圈上开一些规则的孔来形成编码图案：</p>
+<img src=https://groups.csail.mit.edu/graphics/CodedAperture/source_imgs/coded_kernel_rot.jpg>
+
+<p>深度估计：<br><img src=https://groups.csail.mit.edu/graphics/CodedAperture/source_imgs/beer_coke_inp.jpg title=input></p>
+<img src=https://groups.csail.mit.edu/graphics/CodedAperture/source_imgs/depth_beer_coke_c.jpg title=estimation>
+
+<p><a target="_blank" rel="noopener" href="https://groups.csail.mit.edu/graphics/CodedAperture/">Image and Depth from a Conventional Camera with a Coded Aperture</a></p>
+<h3 id="无镜头相机"><a href="#无镜头相机" class="headerlink" title="无镜头相机"></a>无镜头相机</h3><img src=https://d3i71xaburhd42.cloudfront.net/8e219746bed1e55c3e0f866ac9fe09219730b9f7/2-Figure1-1.png>
+
+<p><a target="_blank" rel="noopener" href="https://intra.ece.ucr.edu/~sasif/papers/2015_AASVR_flatcam_iccv.pdf">FlatCam: Replacing Lenses with Masks and Computation</a></p>
+<h3 id="深度相机"><a href="#深度相机" class="headerlink" title="深度相机"></a>深度相机</h3><p>利用TOF（Time-of-flight）来进行实时深度成像</p>
+<p>例如：RealSense、Xbox-kinetic</p>
+<img src=https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/20200501_Time_of_flight.svg/1920px-20200501_Time_of_flight.svg.png>
+
+<h3 id="飞秒摄影"><a href="#飞秒摄影" class="headerlink" title="飞秒摄影"></a>飞秒摄影</h3><p>利用超快的快门和精确sensor同步技术，可以实现拍摄光子传播的过程。</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/EtsXgODHMWk?si=z8MfhivnNVYE3AKw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+<h3 id="光子测量"><a href="#光子测量" class="headerlink" title="光子测量"></a>光子测量</h3><p>对极几何摄像（epipolar imaging）</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/8__WJb06h5E?si=9YFgxtR9faeekXku" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+<h3 id="间接拍摄"><a href="#间接拍摄" class="headerlink" title="间接拍摄"></a>间接拍摄</h3><p>通过算法，甚至可以实现拍摄墙壁后的物体。</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/JWDocXPy-iQ?si=yqDqLTJJCdtbCj8d" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+<h2 id="话题"><a href="#话题" class="headerlink" title="话题"></a>话题</h2><p>数字成像：</p>
+<ul>
+<li>光学和镜头</li>
+<li>色彩</li>
+<li>曝光</li>
+<li>光圈</li>
+<li>对焦和景深</li>
+<li>图像处理管线</li>
+</ul>
+<p>图像处理和合成：</p>
+<ul>
+<li>滤波器</li>
+<li>合成</li>
+<li>锐化</li>
+<li>变形</li>
+<li>3D 合成</li>
+</ul>
+<p>相机类型：</p>
+<ul>
+<li>几何相机模型</li>
+<li>光场相机</li>
+<li>编码相机</li>
+<li>无镜头相机</li>
+<li>压缩相机</li>
+<li>宽频谱相机</li>
+</ul>
+<p>光照和传感：</p>
+<ul>
+<li>ToF 传感器</li>
+<li>结构光</li>
+<li>瞬态成像(Transient imaging)</li>
+<li>计算光线(Computational light transport)</li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/387241900/answer/2283204205">非视距成像</a></li>
+<li>干涉仪</li>
+</ul>
+<h1 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/355808219">3D相机面临的困难问题和解决方案</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/387241900/answer/2283204205">什么是非视距成像</a></li>
+<li><a target="_blank" rel="noopener" href="https://fpcv.cs.columbia.edu/">计算机视觉第一性原理</a></li>
+<li><a target="_blank" rel="noopener" href="http://graphics.cs.cmu.edu/courses/15-463">CMU 15-463, Computational photography, by Prof. Ioannis Gkioulekas</a></li>
+<li><a target="_blank" rel="noopener" href="http://stanford.edu/class/ee367/">Stanford EE367&#x2F;CS448I: Computational imaging and display, by Prof. Gordon Wetzstein</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.cs.toronto.edu/~kyros/courses/320/">U-Toronto CSC320S: Introduction to visual computing, by Prof. Kyros Kutulakos</a></li>
+<li><a target="_blank" rel="noopener" href="https://courses.engr.illinois.edu/cs445/fa2015/">UIUC CS 445: Computational photography, by Prof. Derek Hoiem</a></li>
+<li><a target="_blank" rel="noopener" href="https://ocw.mit.edu/courses/media-arts-and-sciences/mas-531-computational-camera-andphotography-fall-2009">MIT MAS.531&#x2F;MAS.131: Computational camera and photography, by Prof. Ramesh Raskar</a></li>
+</ol>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2023/10/23/Graphics-Physical-Memory/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+              2023-10-25 18:35:41
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/computational-photography/" title="computational photography">
+                        #computational photography
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E6%9C%BA%E7%9A%84%E5%8E%86%E5%8F%B2"><span class="toc-text">相机的历史</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E6%89%8B%E6%9C%BA%E5%B9%BF%E5%91%8A%E7%9C%8B%E7%9B%B8%E6%9C%BA%E7%9A%84%E8%BF%9B%E5%8C%96"><span class="toc-text">从手机广告看相机的进化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E8%AE%A1%E7%AE%97%E6%91%84%E5%BD%B1"><span class="toc-text">什么是计算摄影</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%98%E5%8C%96%E5%92%8C%E5%A2%9E%E5%BC%BA%E6%95%B0%E5%AD%97%E6%91%84%E5%BD%B1"><span class="toc-text">优化和增强数字摄影</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A3%8E%E6%A0%BC%E5%8C%96"><span class="toc-text">风格化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AB%98%E5%8A%A8%E6%80%81%E8%8C%83%E5%9B%B4%E6%88%90%E5%83%8F-HDR"><span class="toc-text">高动态范围成像(HDR)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A8%E4%BD%9C%E6%94%BE%E5%A4%A7"><span class="toc-text">动作放大</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E6%88%90%E6%8B%9F%E7%9C%9F%E5%9B%BE%E7%89%87"><span class="toc-text">合成拟真图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E5%A4%9A%E5%BC%A0%E5%9B%BE%E7%89%87"><span class="toc-text">处理多张图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E5%BE%88%E5%A4%9A%E5%BC%A0%E5%9B%BE%E7%89%87"><span class="toc-text">处理很多张图片</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%B1%E5%BA%A6%E8%A7%86%E8%A7%89"><span class="toc-text">深度视觉</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%89%E5%9C%88%E7%BC%96%E7%A0%81"><span class="toc-text">光圈编码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A0%E9%95%9C%E5%A4%B4%E7%9B%B8%E6%9C%BA"><span class="toc-text">无镜头相机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%B1%E5%BA%A6%E7%9B%B8%E6%9C%BA"><span class="toc-text">深度相机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A3%9E%E7%A7%92%E6%91%84%E5%BD%B1"><span class="toc-text">飞秒摄影</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%89%E5%AD%90%E6%B5%8B%E9%87%8F"><span class="toc-text">光子测量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%97%B4%E6%8E%A5%E6%8B%8D%E6%91%84"><span class="toc-text">间接拍摄</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AF%9D%E9%A2%98"><span class="toc-text">话题</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text">参考文献</span></a>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/baizebing">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/baizebing">Copyright © 2023 Cris Bai</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zchengsite/hexo-theme-oranges">Theme by Oranges | Powered by Hexo</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="Search...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + Lecture%201.%20Introduction%20of%20Computational%20Photography + '&url=' + http%3A%2F%2Fexample.com%2F2023%2F10%2F25%2FIntroduction-of-Computational-Photography%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2023/10/25/Introduction-of-Computational-Photography/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
