@@ -13,7 +13,7 @@
   
   <title>
     
-      About 
+      2023鱼眼相机环视系统综述 
       
       
       |
@@ -144,31 +144,165 @@
   
 
   
-  <!-- 关于页 url形式：https://yoursite/about/ -->
-    <div class="container about-index">
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">2023鱼眼相机环视系统综述</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+          2023-10-28 17:45:36
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Automated-Driving/" title="Automated Driving">
+                    #Automated Driving
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Survey/" title="Survey">
+                    #Survey
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/AVM/" title="AVM">
+                    #AVM
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Fisheye/" title="Fisheye">
+                    #Fisheye
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
       <div class="markdown-body">
-        <h2 id="生活"><a href="#生活" class="headerlink" title="生活"></a>生活</h2><ul>
-<li>看书 📖</li>
-<li>吉他 🎸</li>
-<li>钢琴 🎹</li>
+        <p>本篇综述来源于Varun Ravi Kumar等在IEEE发表的文章<br><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2205.13281.pdf">Surround-view Fisheye Camera Perception for Automated Driving: Overview, Survey &amp; Challenges</a></p>
+<p>作者概括地介绍了在环视系统中所使用的各种相机模型，并讨论了一些感知任务实现的方式，并在最后分析了当下存在的挑战和未来可能的发展方向。</p>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>环视系统通常使用4个互有交叠区域的相机来合成一张完整的360度视野的图片，为汽车或机器人提供其周边的近场视野。目前广泛应用的环视系统多数采用视场（FoV）大于180°的鱼眼镜头，鱼眼镜头强烈的畸变效应给计算机视觉感知算法带来了新的挑战。在以前多数的场景中，大家所使用的感知模型的输入通常是窄视场图片，这些图片畸变不显著。随着鱼眼相机应用越来越广，现在有必要去讨论在鱼眼镜头模型下各种视觉算法的改进和适配。</p>
+<img src=https://ai2-s2-public.s3.amazonaws.com/figures/2017-08-08/b3b65390201792cb412435d190aac799e3ef4a28/1-Figure1-1.png>
+
+<p>理论上来说，针孔相机的视场可以达到180°，但实际上受限于镜头和传感器设计通常不超过80°。Wood最先于1908年发明了鱼眼（fisheye）一词，并组装了第一台鱼眼镜头相机。一个新近的车载鱼眼视频数据集WoodScape也是由此得名。之后，Bond改进了这种水基的透镜，并用半球透镜替代了它，这是鱼眼镜头首次开始光学演进。宫本提供了早期对鱼眼镜头几何畸变的研究，并提及了多种可能具有工程应用价值的模型表示。这些数学模型现在已经被广泛应用在了制图学等领域当中。</p>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>在车载领域，别克公司于1956年开发了第一个基于鱼眼镜头的宽视场后视镜，使用电视作为显示器。2018年，美国政府要求强制安装鱼眼后视镜来减少在倒车中出现的事故。2008年，宝马公司开发了环视相机系统用以提高停车的便利性。现在，基于环视系统的交通监测、物体识别和自动泊车不断发展，为汽车提供了更多便利和安全保障。</p>
+<p>鱼眼镜头所带来的最直接挑战就是强烈的径向畸变。为了修正畸变，必然要损失FoV，且在外围区域产生额外的artifacts. 由畸变导致的物体外观的变化也要更加严重，使得进一步提高了基于CNN的视觉识别算法的复杂度。CNN本身遵循一个基本的平移不变性的<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/516103074">归纳偏置</a>，这也意味着如果使用CNN，那就必须学习某种物体在所有情形下的畸变形态，才能完成准确的识别。除此之外，常见的物体识别所使用的方形框（bounding box）也不再适合这种场景。一些研究学者提出利用畸变信息来形成曲线框来作为最终表示。总而言之，虽然应用广泛，但鱼眼镜头的感知任务研究相比针孔相机还是稀少一些。</p>
+<h3 id="和其他传感器的关系"><a href="#和其他传感器的关系" class="headerlink" title="和其他传感器的关系"></a>和其他传感器的关系</h3><p>自动泊车系统通常使用鱼眼镜头和声纳构成。声纳常见于部署在汽车的前端和后端，为汽车提供可靠稳定的近距测距信息。但是声纳的探测范围通常只有5米，而且提供的信号非常离散，无法从声纳信号中得到更丰富的物体和场景信息。目前已有一些工作来对鱼眼相机和声纳的信号进行合成。最近，有研究利用短距雷达阵列(Array of short-range radar, SSR)来覆盖360°探测范围，并应用于城市驾驶的应用场景当中。雷达的劣势是虽然覆盖范围达到30米，但对近距离并不能做到完全覆盖，存在一些盲点。雷达也不能对路标进行探测，且在物体识别分类任务中表现不佳。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/document/7226254">利用SSR进行停车位识别</a></li>
+<li><a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/document/5940476">鱼眼声纳融合的占据网格架构</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.sciencedirect.com/science/article/abs/pii/S1077314219300530">一些其他的CNN方法</a></li>
 </ul>
-<h2 id="工作"><a href="#工作" class="headerlink" title="工作"></a>工作</h2><ul>
-<li>GPU加速 🛫</li>
-<li>ISP算法 🏞️</li>
-<li>计算摄影 📷</li>
-<li>C++ ➕➕</li>
+<p>其他传感器例如LiDAR在近场视野中也存在盲区，并在分类任务中性能受限，所以无法独立的完成近场感知任务。</p>
+<h2 id="鱼眼相机模型"><a href="#鱼眼相机模型" class="headerlink" title="鱼眼相机模型"></a>鱼眼相机模型</h2><h3 id="数学记号"><a href="#数学记号" class="headerlink" title="数学记号"></a>数学记号</h3><ul>
+<li>矩阵：$A \in \mathbb{R}^{m \times n}$</li>
+<li>向量：$\textbf{v} \in \mathbb{R}^{n}$</li>
+<li>空间一点：$\textbf{X} &#x3D; (X, Y, Z)^\top$</li>
+<li>平面一点：$\textbf{u} &#x3D; (u ,v)^\top$</li>
+<li>单位球：$S^2 &#x3D; {\textbf{s} \in \mathbb{R}| \space ||\textbf{s}||&#x3D;1}|$</li>
+<li>三维到二维的映射：$\pi:C^3 \rightarrow I^2$</li>
+<li>逆映射：$\pi^{-1}:I^2 \rightarrow S^2$</li>
+<li>视场角：$\theta$</li>
+<li>最大视场角：$\theta_{max}$</li>
+<li>极坐标形式：$||\textbf{u}&#x3D;\rho(\theta)||$</li>
 </ul>
-<h2 id="兴趣"><a href="#兴趣" class="headerlink" title="兴趣"></a>兴趣</h2><ul>
-<li>足球 ⚽</li>
-<li>聊天 🤝</li>
-<li>武林外传 🗡</li>
-</ul>
+<h3 id="针孔相机模型"><a href="#针孔相机模型" class="headerlink" title="针孔相机模型"></a>针孔相机模型</h3><p>针孔相机模型广泛应用在各种计算机视觉和机器人当中。其数学模型为：</p>
+<p>$$<br>\pi_p(\textbf{X}) &#x3D; \frac{f}{Z}\left(\begin{array}{c}<br>X \\ Y \end{array} \right)<br>$$</p>
 
       </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2023/10/25/Introduction-of-Computational-Photography/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+              2023-10-28 17:45:36
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Automated-Driving/" title="Automated Driving">
+                        #Automated Driving
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Survey/" title="Survey">
+                        #Survey
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/AVM/" title="AVM">
+                        #AVM
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Fisheye/" title="Fisheye">
+                        #Fisheye
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
     </div>
-  
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E8%A8%80"><span class="toc-text">引言</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8"><span class="toc-text">应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C%E5%85%B6%E4%BB%96%E4%BC%A0%E6%84%9F%E5%99%A8%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">和其他传感器的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%B1%BC%E7%9C%BC%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-text">鱼眼相机模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%A6%E8%AE%B0%E5%8F%B7"><span class="toc-text">数学记号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%92%88%E5%AD%94%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-text">针孔相机模型</span></a></li></ol></li></ol>
+      
+    </div>
+  </div>
 
   
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
 
         
 <div class="footer">
@@ -430,12 +564,12 @@
       </a>
       <div class="share-content hidden">
         
-          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + about + '&url=' + http%3A%2F%2Fexample.com%2Fabout%2Findex.html + '" target="_blank" title="Twitter">
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + 2023%E9%B1%BC%E7%9C%BC%E7%9B%B8%E6%9C%BA%E7%8E%AF%E8%A7%86%E7%B3%BB%E7%BB%9F%E7%BB%BC%E8%BF%B0 + '&url=' + http%3A%2F%2Fexample.com%2F2023%2F10%2F28%2Fsurround-view-survey%2F + '" target="_blank" title="Twitter">
             <i class="iconfont icon-twitter"></i>
           </a>
         
         
-          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/about/index.html" target="_blank" title="Facebook">
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2023/10/28/surround-view-survey/" target="_blank" title="Facebook">
             <i class="iconfont icon-facebooksquare"></i>
           </a>
         
