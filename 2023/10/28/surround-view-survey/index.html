@@ -153,7 +153,7 @@
       <div class="post-attach">
         <span class="post-pubtime">
           <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-          2023-10-30 01:47:43
+          2023-11-23 22:15:59
         </span>
         
               <span class="post-tags">
@@ -236,6 +236,8 @@
 <h4 id="正交投影"><a href="#正交投影" class="headerlink" title="正交投影"></a>正交投影</h4><p>模型为：</p>
 <p>$$<br>\varrho_e(\theta)&#x3D;f\sin{\theta}, \space \pi_o(\textbf{X}) &#x3D; \frac{f}{\Vert \textbf{X}\Vert }\left(\begin{array}{c}<br>X \\ Y \end{array} \right)<br>$$</p>
 <h4 id="扩展正交模型"><a href="#扩展正交模型" class="headerlink" title="扩展正交模型"></a>扩展正交模型</h4><p>将正交投影的像平面从投影球切面移开一段距离 $\lambda$，来控制畸变前后的尺寸比例，减少桶形畸变带来的像素误差，包括锯齿和模糊。<a target="_blank" rel="noopener" href="https://d1wqtxts1xzle7.cloudfront.net/43040443/Extended_fisheye_lens_model_for_practica20160225-7947-ptkgo1-libre.pdf?1456390563=&response-content-disposition=inline;+filename=Extended_fisheye_lens_model_for_practica.pdf&Expires=1698597950&Signature=AbWA27aNP~L5-11ktcDUVwmkqXD8eaWSNuQA2z3pwPGf9hGKAsYbrID-imtpPrKyuz0PsjzIb-aCC6co1Hw-F7PFW0o4yc4oupA9swgjCSLGAHT3kX3a~Z7aI54XkFzmUdU1fN4m31qNApvVx0WgSb43Z3XWJPqPxp3cMWiSq7JRDVVMc84KV4j7erc2ghdIYb0pP8y-LDzlTaKlLeg-RaaWo6dBn0sReELtifzx2v~9EflfwbAd~hiuJYDmBKGcOFXV~HZw8-WHyFbvRBPH1KLL78u5xWomoifqQf-R9uYzcWlzfgmkl7fjVibuXqj95q6Eujod4PV1DqIiOdALvg__&Key-Pair-Id=APKAJLOHF5GGSLRBV4ZA">Extended fisheye lens model for practical geometric correction and image enhancement</a></p>
+<h4 id="扩展等距模型"><a href="#扩展等距模型" class="headerlink" title="扩展等距模型"></a>扩展等距模型</h4><p>和扩展正交模型差不多，将焦距变为 $f+\lambda$。模型为：</p>
+<p>$$<br>\tau_e(\Vert \textbf{u}_d \Vert) &#x3D; (f+\lambda)\tan \left(\frac{\Vert \textbf{u}_d \Vert}{f}\right)<br>$$</p>
 <ol start="2">
 <li>代数模型</li>
 </ol>
@@ -254,7 +256,45 @@
 <p>$$<br>\tau_{fov}(\Vert \textbf{u}_d \Vert)&#x3D;\frac{\tan(\Vert \textbf{u}_d \Vert\omega)}{2\tan\frac{\omega}{2}}<br>$$</p>
 <p>它的逆为：</p>
 <p>$$<br>\tau_{fov}^{-1}(\Vert \textbf{u}_u \Vert)&#x3D;\frac{\arctan(2\Vert \textbf{u}_u \Vert\tan\frac{\omega}{2})}{\omega}<br>$$</p>
-
+<h4 id="统一相机模型"><a href="#统一相机模型" class="headerlink" title="统一相机模型"></a>统一相机模型</h4><h4 id="增强统一相机模型"><a href="#增强统一相机模型" class="headerlink" title="增强统一相机模型"></a>增强统一相机模型</h4><h4 id="双球面模型"><a href="#双球面模型" class="headerlink" title="双球面模型"></a>双球面模型</h4><ol start="4">
+<li>其他模型</li>
+</ol>
+<h2 id="环视相机系统"><a href="#环视相机系统" class="headerlink" title="环视相机系统"></a>环视相机系统</h2><p>这一节讨论环视相机的基本原理。</p>
+<h3 id="视觉任务"><a href="#视觉任务" class="headerlink" title="视觉任务"></a>视觉任务</h3><p>环视相机系统一般用于汽车仪表台，为司机提供环视影响，来帮助泊车或发现周围的行人或物体。</p>
+<p>最开始的设计是采用4个鱼眼镜头来形成俯瞰视野。这种设计基于地面是平直的假设，如果地面不平或周围有汽车等物体，景物将产生强烈的畸变。</p>
+<p>3D环视系统的出现弥补了一些不足，使整体的效果更加逼真。3D环视系统采用碗状模型，采用一些距离估计算法，可以使碗壁的渲染控制的更加合适来减少畸变。类似的算法通常使用OpenGL在GPU上做渲染。</p>
+<p>一般图像处理管线（ISP pipeline）是为人类视觉设计的，而在多路摄像头拼接的场景中，会遇到一些问题。比如多路曝光不一致会产生明暗的割裂，有时会采用一些联合调优的策略来尽可能使多路相机出图和谐一致，虽然这样的设计对人类视觉更加友好，却不利于计算机视觉执行推理任务。</p>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>一般环视系统采用的鱼眼镜头水平FOV为190°，垂直FOV也有150°。</p>
+<h3 id="标定"><a href="#标定" class="headerlink" title="标定"></a>标定</h3><p>可以用OpenCV的标定工具来标定鱼眼相机。</p>
+<h3 id="投影几何"><a href="#投影几何" class="headerlink" title="投影几何"></a>投影几何</h3><p>有关鱼眼相机消失点的估计、平行线的估计</p>
+<h3 id="球面对极几何"><a href="#球面对极几何" class="headerlink" title="球面对极几何"></a>球面对极几何</h3><h3 id="校正"><a href="#校正" class="headerlink" title="校正"></a>校正</h3><ol>
+<li>修正畸变会损失FOV</li>
+<li>重采样会引起采样畸变</li>
+</ol>
+<h2 id="感知任务"><a href="#感知任务" class="headerlink" title="感知任务"></a>感知任务</h2><h3 id="语义任务"><a href="#语义任务" class="headerlink" title="语义任务"></a>语义任务</h3><h4 id="语义分割"><a href="#语义分割" class="headerlink" title="语义分割"></a>语义分割</h4><h4 id="物体检测"><a href="#物体检测" class="headerlink" title="物体检测"></a>物体检测</h4><ul>
+<li>FisheyeDet</li>
+<li>SphereNet</li>
+<li>FisheyeYOLO</li>
+</ul>
+<h4 id="脏污"><a href="#脏污" class="headerlink" title="脏污"></a>脏污</h4><ul>
+<li>模糊（泥土、灰尘、雪）</li>
+<li>透明（水、油）</li>
+</ul>
+<p>DirtyGAN</p>
+<p>太阳炫光</p>
+<h4 id="充电板辅助"><a href="#充电板辅助" class="headerlink" title="充电板辅助"></a>充电板辅助</h4><p>如何自动对齐充电板</p>
+<h4 id="拖车辅助"><a href="#拖车辅助" class="headerlink" title="拖车辅助"></a>拖车辅助</h4><h3 id="几何任务"><a href="#几何任务" class="headerlink" title="几何任务"></a>几何任务</h3><h4 id="深度估计"><a href="#深度估计" class="headerlink" title="深度估计"></a>深度估计</h4><ul>
+<li>FisheyeDistanceNet</li>
+<li>SynDistNet</li>
+</ul>
+<h4 id="测距"><a href="#测距" class="headerlink" title="测距"></a>测距</h4><h4 id="运动分割"><a href="#运动分割" class="headerlink" title="运动分割"></a>运动分割</h4><h3 id="时域任务"><a href="#时域任务" class="headerlink" title="时域任务"></a>时域任务</h3><h4 id="跟踪"><a href="#跟踪" class="headerlink" title="跟踪"></a>跟踪</h4><h4 id="重识别"><a href="#重识别" class="headerlink" title="重识别"></a>重识别</h4><h4 id="SLAM"><a href="#SLAM" class="headerlink" title="SLAM"></a>SLAM</h4><h3 id="多任务模型"><a href="#多任务模型" class="headerlink" title="多任务模型"></a>多任务模型</h3><h2 id="公开数据集和研究方向"><a href="#公开数据集和研究方向" class="headerlink" title="公开数据集和研究方向"></a>公开数据集和研究方向</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><ul>
+<li>KITTI</li>
+<li>SynWoodScape</li>
+<li>KITTI 360degree</li>
+<li>THEODORE</li>
+<li>EgoCap</li>
+</ul>
+<h3 id="研究方向"><a href="#研究方向" class="headerlink" title="研究方向"></a>研究方向</h3><h4 id="畸变感知CNN"><a href="#畸变感知CNN" class="headerlink" title="畸变感知CNN"></a>畸变感知CNN</h4><h4 id="处理时域变化"><a href="#处理时域变化" class="headerlink" title="处理时域变化"></a>处理时域变化</h4><h4 id="BEV感知"><a href="#BEV感知" class="headerlink" title="BEV感知"></a>BEV感知</h4><h4 id="多相机模型"><a href="#多相机模型" class="headerlink" title="多相机模型"></a>多相机模型</h4><h4 id="统一近场远场相机模型"><a href="#统一近场远场相机模型" class="headerlink" title="统一近场远场相机模型"></a>统一近场远场相机模型</h4>
       </div>
       
         <div class="prev-or-next">
@@ -269,7 +309,7 @@
           <div class="post-attach">
             <span class="post-pubtime">
               <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
-              2023-10-30 01:47:43
+              2023-11-23 22:15:59
             </span>
             
                   <span class="post-tags">
@@ -316,7 +356,7 @@
     <div class="title">Contents</div>
     <div class="catalog-content">
       
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E8%A8%80"><span class="toc-text">引言</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8"><span class="toc-text">应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C%E5%85%B6%E4%BB%96%E4%BC%A0%E6%84%9F%E5%99%A8%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">和其他传感器的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%B1%BC%E7%9C%BC%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-text">鱼眼相机模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%A6%E8%AE%B0%E5%8F%B7"><span class="toc-text">数学记号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%92%88%E5%AD%94%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-text">针孔相机模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AD%89%E8%B7%9D%E6%8A%95%E5%BD%B1"><span class="toc-text">等距投影</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AB%8B%E4%BD%93%E6%8A%95%E5%BD%B1"><span class="toc-text">立体投影</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A3%E4%BA%A4%E6%8A%95%E5%BD%B1"><span class="toc-text">正交投影</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E6%AD%A3%E4%BA%A4%E6%A8%A1%E5%9E%8B"><span class="toc-text">扩展正交模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%9A%E9%A1%B9%E5%BC%8F%E6%A8%A1%E5%9E%8B"><span class="toc-text">多项式模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%88%92%E6%A8%A1%E5%9E%8B"><span class="toc-text">分划模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FoV%E6%A8%A1%E5%9E%8B"><span class="toc-text">FoV模型</span></a></li></ol></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E8%A8%80"><span class="toc-text">引言</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BA%94%E7%94%A8"><span class="toc-text">应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C%E5%85%B6%E4%BB%96%E4%BC%A0%E6%84%9F%E5%99%A8%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text">和其他传感器的关系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%B1%BC%E7%9C%BC%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-text">鱼眼相机模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%A6%E8%AE%B0%E5%8F%B7"><span class="toc-text">数学记号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%92%88%E5%AD%94%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-text">针孔相机模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AD%89%E8%B7%9D%E6%8A%95%E5%BD%B1"><span class="toc-text">等距投影</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%AB%8B%E4%BD%93%E6%8A%95%E5%BD%B1"><span class="toc-text">立体投影</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A3%E4%BA%A4%E6%8A%95%E5%BD%B1"><span class="toc-text">正交投影</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E6%AD%A3%E4%BA%A4%E6%A8%A1%E5%9E%8B"><span class="toc-text">扩展正交模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E7%AD%89%E8%B7%9D%E6%A8%A1%E5%9E%8B"><span class="toc-text">扩展等距模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%9A%E9%A1%B9%E5%BC%8F%E6%A8%A1%E5%9E%8B"><span class="toc-text">多项式模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%88%92%E6%A8%A1%E5%9E%8B"><span class="toc-text">分划模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FoV%E6%A8%A1%E5%9E%8B"><span class="toc-text">FoV模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E4%B8%80%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-text">统一相机模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A2%9E%E5%BC%BA%E7%BB%9F%E4%B8%80%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-text">增强统一相机模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%8C%E7%90%83%E9%9D%A2%E6%A8%A1%E5%9E%8B"><span class="toc-text">双球面模型</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E8%A7%86%E7%9B%B8%E6%9C%BA%E7%B3%BB%E7%BB%9F"><span class="toc-text">环视相机系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%86%E8%A7%89%E4%BB%BB%E5%8A%A1"><span class="toc-text">视觉任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE"><span class="toc-text">配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E5%AE%9A"><span class="toc-text">标定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%95%E5%BD%B1%E5%87%A0%E4%BD%95"><span class="toc-text">投影几何</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%90%83%E9%9D%A2%E5%AF%B9%E6%9E%81%E5%87%A0%E4%BD%95"><span class="toc-text">球面对极几何</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%A1%E6%AD%A3"><span class="toc-text">校正</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%84%9F%E7%9F%A5%E4%BB%BB%E5%8A%A1"><span class="toc-text">感知任务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%AD%E4%B9%89%E4%BB%BB%E5%8A%A1"><span class="toc-text">语义任务</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AF%AD%E4%B9%89%E5%88%86%E5%89%B2"><span class="toc-text">语义分割</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%A9%E4%BD%93%E6%A3%80%E6%B5%8B"><span class="toc-text">物体检测</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%84%8F%E6%B1%A1"><span class="toc-text">脏污</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%85%E7%94%B5%E6%9D%BF%E8%BE%85%E5%8A%A9"><span class="toc-text">充电板辅助</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%96%E8%BD%A6%E8%BE%85%E5%8A%A9"><span class="toc-text">拖车辅助</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%A0%E4%BD%95%E4%BB%BB%E5%8A%A1"><span class="toc-text">几何任务</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%B1%E5%BA%A6%E4%BC%B0%E8%AE%A1"><span class="toc-text">深度估计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%B7%9D"><span class="toc-text">测距</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%90%E5%8A%A8%E5%88%86%E5%89%B2"><span class="toc-text">运动分割</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%B6%E5%9F%9F%E4%BB%BB%E5%8A%A1"><span class="toc-text">时域任务</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%B7%9F%E8%B8%AA"><span class="toc-text">跟踪</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E8%AF%86%E5%88%AB"><span class="toc-text">重识别</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SLAM"><span class="toc-text">SLAM</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E4%BB%BB%E5%8A%A1%E6%A8%A1%E5%9E%8B"><span class="toc-text">多任务模型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AC%E5%BC%80%E6%95%B0%E6%8D%AE%E9%9B%86%E5%92%8C%E7%A0%94%E7%A9%B6%E6%96%B9%E5%90%91"><span class="toc-text">公开数据集和研究方向</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="toc-text">数据集</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A0%94%E7%A9%B6%E6%96%B9%E5%90%91"><span class="toc-text">研究方向</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%95%B8%E5%8F%98%E6%84%9F%E7%9F%A5CNN"><span class="toc-text">畸变感知CNN</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E6%97%B6%E5%9F%9F%E5%8F%98%E5%8C%96"><span class="toc-text">处理时域变化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#BEV%E6%84%9F%E7%9F%A5"><span class="toc-text">BEV感知</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%9A%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-text">多相机模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E4%B8%80%E8%BF%91%E5%9C%BA%E8%BF%9C%E5%9C%BA%E7%9B%B8%E6%9C%BA%E6%A8%A1%E5%9E%8B"><span class="toc-text">统一近场远场相机模型</span></a></li></ol></li></ol></li></ol>
       
     </div>
   </div>
