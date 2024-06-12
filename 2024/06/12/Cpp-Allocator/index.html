@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en" color-mode="light">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <meta name="keywords" content="GPU Intel Performance">
+  
+  <meta name="author" content="Cris Bai" />
+  <meta name="description" content="" />
+  
+  
+  <title>
+    
+      C++ Allocator 
+      
+      
+      |
+    
+     Cris Bai&#39;s Blog
+  </title>
+
+  
+    <link rel="apple-touch-icon" href="/images/favicon.png">
+    <link rel="icon" href="/images/favicon.png">
+  
+
+  <!-- Raleway-Font -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
+
+  <!-- hexo site css -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1886449_67xjft27j1l.css" />
+  <!-- 代码块风格 -->
+  
+
+  <!-- jquery3.3.1 -->
+  
+    <script defer type="text/javascript" src="/plugins/jquery.min.js"></script>
+  
+
+  <!-- fancybox -->
+  
+    <link href="/plugins/jquery.fancybox.min.css" rel="stylesheet">
+    <script defer type="text/javascript" src="/plugins/jquery.fancybox.min.js"></script>
+  
+  
+<script src="/js/fancybox.js"></script>
+
+
+  
+
+  
+
+  <script>
+    var html = document.documentElement
+    const colorMode = localStorage.getItem('color-mode')
+    if (colorMode) {
+      document.documentElement.setAttribute('color-mode', colorMode)
+    }
+  </script>
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+  <body>
+    <div id="app">
+      <div class="header">
+  <div class="avatar">
+    <a href="/">
+      <!-- 头像取消懒加载，添加no-lazy -->
+      
+        <img src="/images/avatar.png" alt="">
+      
+    </a>
+    <div class="nickname"><a href="/">Oranges</a></div>
+  </div>
+  <div class="navbar">
+    <ul>
+      
+        <li class="nav-item" data-path="/">
+          <a href="/">Home</a>
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          <a href="/archives/">Archives</a>
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          <a href="/tags/">Tags</a>
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          <a href="/about/">About</a>
+        </li>
+      
+    </ul>
+  </div>
+</div>
+
+
+<script src="/js/activeNav.js"></script>
+
+
+
+      <div class="flex-container">
+        <!-- 文章详情页，展示文章具体内容，url形式：https://yoursite/文章标题/ -->
+<!-- 同时为「标签tag」，「朋友friend」，「分类categories」，「关于about」页面的承载页面，具体展示取决于page.type -->
+
+
+  <!-- LaTex Display -->
+
+  
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+
+
+
+
+
+  <!-- clipboard -->
+
+  
+    <script async type="text/javascript" src="/plugins/clipboard.min.js"></script>
+  
+  
+<script src="/js/codeCopy.js"></script>
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  <!-- 文章内容页 url形式：https://yoursite/文章标题/ -->
+  <div class="container post-details" id="post-details">
+    <div class="post-content">
+      <div class="post-title">C++ Allocator</div>
+      <div class="post-attach">
+        <span class="post-pubtime">
+          <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+          2024-06-12 21:19:21
+        </span>
+        
+              <span class="post-tags">
+                <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Modern-C/" title="Modern C++">
+                    #Modern C++
+                  </a>
+                </span>
+                
+                <span class="span--tag mr-8">
+                  <a href="/tags/Memory-manage/" title="Memory manage">
+                    #Memory manage
+                  </a>
+                </span>
+                
+              </span>
+          
+      </div>
+      <div class="markdown-body">
+        <h2 id="C-标准库内存分配器和内存分配器特性"><a href="#C-标准库内存分配器和内存分配器特性" class="headerlink" title="C++ 标准库内存分配器和内存分配器特性"></a>C++ 标准库内存分配器和内存分配器特性</h2><h3 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h3><p>在我们日常使用C++ STL容器类比如<code>std::vector</code>时，细心的同学会注意到，<code>std::vector</code>的模板参数并不是只有一个元素类型，而是类似于：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">std::vector&lt;<span class="keyword">typename</span> _Ty, <span class="keyword">typename</span> _Alloc = std::allocator &lt; _Ty &gt;&gt;</span><br></pre></td></tr></table></figure>
+<p>我们知道，前面的模板参数 <code>_Ty</code> 代表了该容器的元素类型，那么这个<code>allocator</code>是做什么的，我们什么时候该使用它呢？</p>
+<h3 id="历史"><a href="#历史" class="headerlink" title="历史"></a>历史</h3><p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Allocator_%28C%2B%2B%29">Allocator C++ from wikipedia</a> 该页介绍了一些allocator的发展。从最开始<code>allocator</code>的作者的意图就是希望将容器行为和底层存储模型解耦，这使得标准库容器可以在更广泛的领域发挥作用，而屏蔽容器使用者对底层内存模型的感知，进一步提高了封装性。</p>
+<p>其实很少有公司或者项目需要程序设计者真正的去改变甚至自定义内存分配器，因为这通常意味着难于维护并减少了可扩展性和通用性，但是在异构计算飞速发展的今天，底层数据不仅仅来源于普通的<code>new</code>和<code>delete</code>，而是可能通过各种特殊的API访问不同介质上的存储空间，比如显存或者神经网络加速器的片上存储。通常，这些存储的分配并不能通过C++标准库来得到，而是由专有API管理，那么如果我们希望在这些存储上分配标准库容器或其他自定义容器时，一个灵活的<code>allocator</code>机制就显得格外重要了。</p>
+<h3 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h3><p>采用行为和存储分离的<code>allocator</code>设计模式有很多好处。比如：</p>
+<ol>
+<li>使算法逻辑和底层存储的实现相分离，这通常对算法仿真非常友好，用户可以在普通DDR上完成算法的设计和验证，而在真正的加速器上去做部署，如果没有一个独立的<code>allocator</code>机制，那么繁琐的数据存储管理，搬移将变得非常麻烦。</li>
+<li>尽可能的利用现有的<code>STL</code>基础设施，如果用户设计的<code>allocator</code>兼容标准库中的<code>std::allocator_traits</code>，那就意味着标准库中的大部分容器可以直接部署在该分配器上，而对于容器使用者来说，这与普通（默认）分配器的行为别无二致。</li>
+<li>增强性能。在异构计算领域之外，很多项目都采用了自定义分配器来加速程序提高性能，典型的状况可能有：<ol>
+<li>该项目使用了一个自己设计的内存池来加速内存分配和释放，为了使用该内存池分配容器，需要自定义分配器将存储逻辑转移到自定义内存池上</li>
+<li>该项目有一些特殊情况并不希望一定在堆上分配内存，比如类似在<code>std::string</code>中所采用的小对象优化（在长度低于16字节时，直接使用内置的栈内存）</li>
+<li>该项目使用了一些共享内存技术，不希望容器的数据在可共享的条件下依然采用复制</li>
+</ol>
+</li>
+</ol>
+<h3 id="如何入手"><a href="#如何入手" class="headerlink" title="如何入手"></a>如何入手</h3><ol>
+<li>明确需求：首先<code>allocator</code>的设计模式是一种思想，要先判断在项目中是否真的需要对内存的分配释放进行抽象，在很多情况下，直抒胸臆的代码可能更容易维护，和减少隐藏的内存问题。</li>
+<li>是否要兼容标准库，由于目前C++的发展主要由几家公司来主导，而C++标准委员会并没有要求标准库有统一的实现，因此要设计一个跨平台跨编译器同时兼容标准库的分配器并不是很容易，如果项目对标准库分配器没有很强的定制需求，那么分配器不应该强行匹配标准库行为，这会带来一些额外的工作量。</li>
+<li>但是，学习标准库的<code>std::allocator_traits</code>是一个不错的入手的例子，来指导完成一个逻辑自洽的内存分配器，您可能不需要实现其中的每一个细节，但是在学习的过程中，标准库所考虑的问题一定会给您的项目带来一些提示，让你少走弯路。</li>
+</ol>
+<h3 id="从C-17-std-allocator-traits-出发"><a href="#从C-17-std-allocator-traits-出发" class="headerlink" title="从C++17 std::allocator_traits 出发"></a>从C++17 std::allocator_traits 出发</h3><p>在阅读完<code>allocator</code>的历史之后，我们会发现在发展的过程，其设计思想和理念发生了很大的变化，本文基于C++17及以上标准展开讨论。</p>
+<p><code>std::allocator_traits</code> 是标准库对分配器接口的定义和封装，标准库容器均使用该trait的泛化类型<code>std::allocator_traits&lt;YourAllocator&gt;</code>来对标准库容器进行操作，来保证兼容性和一致性。</p>
+<p>在MSDN上，有一篇文章非常简明扼要的介绍了如何写一个最基础的分配器，<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/cpp/standard-library/allocators?view=msvc-170">Allocators</a>，其中对C++11标准和C++03标准都有讨论。</p>
+<p><a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/memory/allocator_traits">std::allocator_traits</a> 这里是完整的特性定义。</p>
+<p><a target="_blank" rel="noopener" href="https://isocpp.org/files/papers/N4860.pdf">C++ Draft International Standard</a> 这里是C++标准草案，该文档更加正式和准确。</p>
+<p>通篇阅读后，我们会发现，有一些内容和我们预想的一样，分配器应该提供<code>allocate</code>, <code>deallocate</code>来分配内存，同时也提供<code>construct</code>和<code>destroy</code>来构建元素和析构元素。</p>
+<p>但同时也有一些让人琢磨不透的成员类型和类内模板比如<code>is_always_equal</code>, <code>rebind_alloc&lt;T&gt;</code>，下面我们根据几个话题来讨论一下。</p>
+<h3 id="讨论"><a href="#讨论" class="headerlink" title="讨论"></a>讨论</h3><ol>
+<li><p><strong>分配器是否需要有状态？</strong>不得不说实现一个无状态的分配器肯定是要更容易的，但通常情况下实现自定义分配器的目的就是想在分配器内部携带一定的信息。分配器的状态引发了关于等价性的讨论，即：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如果</span></span><br><span class="line">MyAllocator&lt;<span class="type">int</span>&gt; a, b;</span><br><span class="line"><span class="comment">// 那么</span></span><br><span class="line"><span class="type">bool</span> compare = (a == b) ? <span class="literal">true</span> : <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+<p>如果<strong>a&#x3D;&#x3D;b</strong>，那么意味着由a分配的内存可以被b释放，反之亦然，也就是两者完全等价。如果<strong>a!&#x3D;b</strong>，那么意味着a分配的内存不可以被b释放，通常情形是这两个实例处在不同的内存空间且无法交换信息。</p>
+</li>
+<li><p><strong>容器的复制、移动和交换如何分配器的行为</strong><br>这一部分留给大家去阅读标准定义，并亲自试一试</p>
+</li>
+<li><p><strong>rebind</strong><br>对于标准库中的默认分配器<code>std::allocator</code>，<code>rebind</code>在C++17标准中被标记为过时，并在C++20标准中被移除。这是一个帮助模板类，一般定义为：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">U</span>&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">rebind</span> &#123;</span><br><span class="line">  <span class="keyword">using</span> other = allocator&lt;U&gt;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这个模板类的作用是帮助容器类来获取一个与元素分配器类型不同的分配器，例如我们通常在构建一个list的时候会这么写：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">list&lt;<span class="type">int</span>, MyAllocator&lt;<span class="type">int</span>&gt;&gt; a_list;</span><br></pre></td></tr></table></figure>
+<p>但是在list的实现内部，我们可能需要一个特殊的类<code>Node&lt;int&gt;</code>来实际管理节点，那么我们就需要一个<code>MyAllocator&lt;Node&lt;int&gt;&gt;</code>的类型，这时候想向编译器声明我们希望得到的这个类型就可以使用<code>rebind</code>了，例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 特化后的类中的一部分代码</span></span><br><span class="line"><span class="keyword">using</span> _Alloc = MyAllocator&lt;<span class="type">int</span>&gt;;</span><br><span class="line"><span class="keyword">using</span> _We_Want = _Alloc::rebind&lt;Node&lt;<span class="type">int</span>&gt;&gt;::other;</span><br></pre></td></tr></table></figure>
+<p>这样就完成了狸猫换太子般的类型声明。</p>
+</li>
+</ol>
+<h3 id="实际操作"><a href="#实际操作" class="headerlink" title="实际操作"></a>实际操作</h3><p>那么现在我们可以来看一个例子，这个例子不一定100%在所有情况下正确，只是为了展示一些可能遇到的坑，用以评价选择实现自定义分配器是否是一条合适的路。</p>
+<h4 id="小对象优化分配器"><a href="#小对象优化分配器" class="headerlink" title="小对象优化分配器"></a>小对象优化分配器</h4><p>前文提到过，在很多容器或者项目里，都有针对小对象的优化策略，那么我们是否可以为标准库的<code>std::vector</code>来实现一个带有小对象优化的自定义分配器呢？</p>
+<p>基本行为很简单：在使用低于8个元素的空间时，直接使用分配器内置的数组空间（通常在栈上），而分配超过8个元素空间时退化为普通的分配器。简单！让我们改一改<code>allocate</code>和<code>deallocate</code>的行为就好了！上代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;type_traits&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;new&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">soo_allocator</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> value_type = T;</span><br><span class="line">    <span class="keyword">using</span> propagate_on_container_copy_assignment = std::true_type;</span><br><span class="line">    <span class="keyword">using</span> is_always_equal = std::false_type;</span><br><span class="line">    <span class="comment">// 默认构造函数</span></span><br><span class="line">    <span class="built_in">soo_allocator</span>() <span class="keyword">noexcept</span> &#123;&#125;</span><br><span class="line">    <span class="comment">// 默认复制构造函数</span></span><br><span class="line">    <span class="built_in">soo_allocator</span>(<span class="type">const</span> soo_allocator&amp; other) <span class="keyword">noexcept</span> &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</span><br><span class="line">    <span class="keyword">friend</span> <span class="keyword">class</span> <span class="title class_">soo_allocator</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 默认模板复制构造函数</span></span><br><span class="line">    <span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</span></span><br><span class="line"><span class="function">    <span class="title">soo_allocator</span><span class="params">(<span class="type">const</span> soo_allocator&lt;U&gt;&amp; other)</span></span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 等价性检查</span></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>==(<span class="type">const</span> soo_allocator&lt;U&gt;&amp; other) <span class="type">const</span> <span class="keyword">noexcept</span> &#123; <span class="keyword">return</span> <span class="literal">false</span>; &#125;</span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>==(<span class="type">const</span> soo_allocator&amp; other) <span class="type">const</span> <span class="keyword">noexcept</span> &#123; <span class="keyword">return</span> <span class="literal">false</span>; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 保证对称逻辑</span></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>!=(<span class="type">const</span> soo_allocator&lt;U&gt;&amp; other) <span class="type">const</span> <span class="keyword">noexcept</span> &#123; <span class="keyword">return</span> <span class="literal">true</span>; &#125;</span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>!=(<span class="type">const</span> soo_allocator&amp; other) <span class="type">const</span> <span class="keyword">noexcept</span> &#123; <span class="keyword">return</span> <span class="literal">true</span>; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 分配策略</span></span><br><span class="line">    <span class="function">T* <span class="title">allocate</span><span class="params">(<span class="type">const</span> <span class="type">size_t</span> n)</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>)<span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">8</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">reinterpret_cast</span>&lt;T*&gt;(<span class="built_in">const_cast</span>&lt;<span class="type">uint8_t</span>*&gt;(_space));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="type">void</span>* <span class="type">const</span> pv = <span class="built_in">malloc</span>(n * <span class="built_in">sizeof</span>(T));</span><br><span class="line">        <span class="keyword">if</span> (!pv) &#123; <span class="keyword">throw</span> std::<span class="built_in">bad_alloc</span>(); &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">static_cast</span>&lt;T*&gt;(pv);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放策略</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">deallocate</span><span class="params">(T* <span class="type">const</span> p, <span class="type">size_t</span> n)</span> <span class="type">const</span> <span class="keyword">noexcept</span> </span>&#123;</span><br><span class="line">        cout &lt;&lt; <span class="string">&quot;I&#x27;m &quot;</span> &lt;&lt; (<span class="type">void</span>*)_space &lt;&lt; <span class="string">&quot; but release &quot;</span> &lt;&lt; (<span class="type">void</span>*)p &lt;&lt; <span class="string">&quot; with &quot;</span> &lt;&lt; n &lt;&lt; <span class="string">&quot; elemets\n&quot;</span>;</span><br><span class="line">        <span class="keyword">if</span> (n &lt;= <span class="number">8</span>)<span class="keyword">return</span>;</span><br><span class="line">        <span class="built_in">free</span>(p);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 析构函数</span></span><br><span class="line">    ~<span class="built_in">soo_allocator</span>()&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 1 代码片</span></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</span><br><span class="line">    <span class="keyword">operator</span> std::<span class="built_in">allocator</span>&lt;U&gt;() <span class="type">const</span> &#123; <span class="keyword">return</span> &#123;&#125;; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2 代码片</span></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">rebind</span> &#123;</span><br><span class="line">        <span class="keyword">using</span> other = std::allocator&lt;U&gt;;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3 代码片</span></span><br><span class="line">    <span class="keyword">template</span>&lt;&gt;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">rebind</span>&lt;T&gt; &#123;</span><br><span class="line">        <span class="keyword">using</span> other = soo_allocator&lt;T&gt;;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// 所谓的栈空间</span></span><br><span class="line">    <span class="type">uint8_t</span> _space[<span class="number">8</span> * <span class="built_in">sizeof</span>(T)];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>🆗，我们大概完成了一个看上去不错的自定义分配器，在分配和释放函数中，我们实现了我们的分配策略。但是下面的代码片1-3又是什么操作？</p>
+<h4 id="坑"><a href="#坑" class="headerlink" title="坑"></a>坑</h4><p>加入测试样例：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::vector&lt;<span class="type">int</span>, soo_allocator&lt;<span class="type">int</span>&gt;&gt; <span class="built_in">vec</span>(<span class="number">4</span>, <span class="number">8</span>); <span class="comment">// 构造4个8</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> k : vec) &#123;</span><br><span class="line">        cout &lt;&lt; k &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当真正的实例化<code>std::vector&lt;int, soo_allocator&lt;int&gt;&gt;</code>时，一切正常，但在程序退出时报了一个运行时异常（VS2022 Debug x64），这肯定和我们的内存分配器有关，那么我们来看看在标准库中究竟会如何使用我们构建的自定义分配器，而其中又有什么猫腻。</p>
+<p>想法很美好，现实很骨感。标准库对<code>std::vector</code>的实现并没有和我们想象的一样<em>Naive</em>。在分配器<code>allocate</code>和<code>deallocate</code>实现中加入一些log之后我们会得到如下的打印：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">allocating 1 element</span><br><span class="line">allocating 4 element</span><br><span class="line">release 4 element</span><br><span class="line">release 1 element</span><br></pre></td></tr></table></figure>
+<p>这里面的为什么会多一次分配1个元素，这是在分配什么？</p>
+<p>这里引用一篇文章<a target="_blank" rel="noopener" href="https://blog.csdn.net/leizhengshenglzs/article/details/136263904">STL迭代器引发的崩溃问题</a>，博主也曾经遇到一个STL崩溃问题，结合STL的源码我们可以得到一个结论：</p>
+<ol>
+<li>STL的实现在Debug模式下会加入一些运行时异常检查，如果存在内存问题，该检查会及时报错。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> _ITERATOR_DEBUG_LEVEL == 0</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure></li>
+<li>针对<code>std::vector</code>来说，在MSVC的实现中，有一个<code>_Container_proxy</code>的类在Debug模式中被实例化，来记录迭代器链表。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">_Container_proxy</span> &#123; <span class="comment">// store head of iterator chain and back pointer</span></span><br><span class="line">    _CONSTEXPR20 _Container_proxy() <span class="keyword">noexcept</span> = <span class="keyword">default</span>;</span><br><span class="line">    _CONSTEXPR20 _Container_proxy(_Container_base12* _Mycont_) <span class="keyword">noexcept</span> : _Mycont(_Mycont_) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">const</span> _Container_base12* _Mycont       = <span class="literal">nullptr</span>;</span><br><span class="line">    <span class="keyword">mutable</span> _Iterator_base12* _Myfirstiter = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+<li>在<code>std::vector</code>的构造时，为该类分配内存的分配器也是我们的自定义分配器。注意代码中使用了前文提到的<code>rebind</code>技术，并获得了类名为<code>soo_allocator&lt;_Container_proxy&gt;</code>的分配器。STL使用该分配器分配了1个元素空间来存储迭代器.<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> _GET_PROXY_ALLOCATOR(_Alty, _Al) static_cast<span class="string">&lt;_Rebind_alloc_t&lt;_Alty, _Container_proxy&gt;</span>&gt;(_Al)</span></span><br><span class="line">...</span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">_Alloc</span>&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">_Container_proxy_ptr12</span> : _Basic_container_proxy_ptr12 &#123;</span><br><span class="line">    <span class="comment">// smart pointer components for a _Container_proxy * for an allocator family</span></span><br><span class="line">    _Alloc&amp; _Al;</span><br><span class="line"></span><br><span class="line">    _CONSTEXPR20 _Container_proxy_ptr12(_Alloc&amp; _Al_, _Leave_proxy_unbound) : _Al(_Al_) &#123;</span><br><span class="line">        <span class="comment">// create a new unbound _Container_proxy</span></span><br><span class="line">        _Ptr = _Unfancy(_Al_.<span class="built_in">allocate</span>(<span class="number">1</span>));</span><br><span class="line">        _Construct_in_place(*_Ptr);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+<li>在构造时<code>soo_allocator&lt;_Container_proxy&gt;</code>的实例为临时对象，构造结束后就被析构回收。这里问题就来了，我们的<code>soo_allocator</code>的内存分配在栈上，一旦出栈，该空间就被丢掉了，而上面的迭代器信息还没有被正确析构呢！当<code>std::vector</code>结束自己的生命周期准备<code>clear()</code>的时候“<code>_Container_proxy </code>上面记录的这个迭代器指针就变成了一个野指针”，从而造成了非法访问而引起崩溃。</li>
+</ol>
+<h4 id="魔改代码片"><a href="#魔改代码片" class="headerlink" title="魔改代码片"></a>魔改代码片</h4><p>代码片1-3是一种不正规的hack手段。</p>
+<p>首先我们注意到，为了避免迭代器检查错误分配空间，我们需要在分配该迭代器链表时使用退化的普通分配器，这可以通过<strong>代码片2</strong>魔改<code>rebind</code>机制来实现。通过修改<code>rebind</code>的类型声明，使得通过<code>rebind</code>来反射模板类型的时候实际拿到的是<code>std::allocator&lt;_Container_proxy&gt;</code>，使得迭代器链表能以通常的方式分配和释放。</p>
+<p>其次为了防止影响到模板类为<code>int</code>的其他反射调用，我们需要<strong>代码片3</strong>特化<code>rebind</code>模板类型，当检查到需要<code>rebind</code>的类型和原始类型<code>T</code>一致时，我们依然返回<code>soo_allocator&lt;T&gt;</code>来保证行为正确，一致。</p>
+<p>最后我们注意到，STL在构造<code>soo_allocator&lt;_Container_proxy&gt;</code>时传入的参数实际上是<code>soo_allocator&lt;int&gt;</code>，我们需要<strong>代码片1</strong>一个类型转换操作符来实现这个构造过程。</p>
+<p>在完成这些许大力出奇迹之后，我们终于获得了一个可以编译并在Debug模式下正常运行的程序。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>根据以上分析，<code>allocator</code>的设计思想是非常好的，标准库也做了很多努力，让其逻辑自洽并尽可能灵活好用，但想设计一个真正灵活的满足标准库容器的分配器并不容易，甚至其行为与具体STL的实现方式相关，编写C++程序的程序员无论如何都不想去参透辣眼睛的STL源码，这也不是正常的产品维护逻辑。如社区内长久的讨论一样，似乎想得到一个完美的设计思想非常困难，例如：</p>
+<blockquote>
+<p>在“自定义分配器”这一话题上，已有诸多C++专家与相关作者参与探讨，例如斯科特·梅耶斯的作品《Effective STL》与安德烈·亚历山德雷斯库的《Modern C++ Design》都有提及。梅耶斯洞察到，若要求针对某一类型T的分配器的所有实例都相等，则可移植的分配器的实例必须不包含状态。虽然C++标准鼓励库的实现者支持带状态的分配器，但梅耶斯称，相关段落是“（看似）美妙的观点”，但也几乎是空话，并称分配器的限制“过于严苛”。例如，STL的list允许splice方法，即一个list对象A的节点可以被直接移入另一个list对象B中，这就要求A的分配器申请到的内存，可被B的分配器释放掉，从而推导出A与B的分配器实例必须相等。梅耶斯的结论是，分配器最好定义为使用静态方法的类型。例如，根据C++标准，分配器必须提供一个实现了rebind方法的other类模板。<br>另外，在《C++程序设计语言》中，比雅尼·斯特劳斯特鲁普则认为“‘严格限制分配器，以免各对象信息不同’，这点显然问题不大”（大意），并指出大部分分配器并不需要状态，甚至没有状态情形下性能反倒更佳。他提出了三个自定义分配器的用例：内存池型的分配器、共享内存型分配器与垃圾回收型分配器，并展示了一个分配器的实现，此间利用了一个内部内存池，以快速分配&#x2F;解除分配少量内存。但他也提到，如此优化可能已经在他所提供的样例分配器中实现。</p>
+</blockquote>
+<p>希望以上的讨论能给开发带来一些思考和提示，使<code>allocator</code>真正发挥出它的价值所在。</p>
+
+      </div>
+      
+        <div class="prev-or-next">
+          <div class="post-foot-next">
+            
+              <a href="/2023/10/28/surround-view-survey/" target="_self">
+                <i class="iconfont icon-chevronleft"></i>
+                <span>Prev</span>
+              </a>
+            
+          </div>
+          <div class="post-attach">
+            <span class="post-pubtime">
+              <i class="iconfont icon-updatetime mr-10" title="Update time"></i>
+              2024-06-12 21:19:21
+            </span>
+            
+                  <span class="post-tags">
+                    <i class="iconfont icon-tags mr-10" title="Tags"></i>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Modern-C/" title="Modern C++">
+                        #Modern C++
+                      </a>
+                    </span>
+                    
+                    <span class="span--tag mr-8">
+                      <a href="/tags/Memory-manage/" title="Memory manage">
+                        #Memory manage
+                      </a>
+                    </span>
+                    
+                  </span>
+              
+          </div>
+          <div class="post-foot-prev">
+            
+          </div>
+        </div>
+      
+    </div>
+    
+  <div id="btn-catalog" class="btn-catalog">
+    <i class="iconfont icon-catalog"></i>
+  </div>
+  <div class="post-catalog hidden" id="catalog">
+    <div class="title">Contents</div>
+    <div class="catalog-content">
+      
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#C-%E6%A0%87%E5%87%86%E5%BA%93%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%99%A8%E5%92%8C%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E5%99%A8%E7%89%B9%E6%80%A7"><span class="toc-text">C++ 标准库内存分配器和内存分配器特性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E8%A8%80"><span class="toc-text">引言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%86%E5%8F%B2"><span class="toc-text">历史</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E5%8A%BF"><span class="toc-text">优势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%85%A5%E6%89%8B"><span class="toc-text">如何入手</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8EC-17-std-allocator-traits-%E5%87%BA%E5%8F%91"><span class="toc-text">从C++17 std::allocator_traits 出发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A8%E8%AE%BA"><span class="toc-text">讨论</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E6%93%8D%E4%BD%9C"><span class="toc-text">实际操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E5%AF%B9%E8%B1%A1%E4%BC%98%E5%8C%96%E5%88%86%E9%85%8D%E5%99%A8"><span class="toc-text">小对象优化分配器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9D%91"><span class="toc-text">坑</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AD%94%E6%94%B9%E4%BB%A3%E7%A0%81%E7%89%87"><span class="toc-text">魔改代码片</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
+      
+    </div>
+  </div>
+
+  
+<script src="/js/catalog.js"></script>
+
+
+
+
+    
+      <div class="comments-container">
+        
+
+
+
+
+
+
+
+      </div>
+    
+  </div>
+
+
+        
+<div class="footer">
+  <div class="social">
+    <ul>
+      
+        <li>
+          <a title="github" target="_blank" rel="noopener" href="https://github.com/baizebing">
+            <i class="iconfont icon-github"></i>
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/baizebing">Copyright © 2024 Cris Bai</a>
+        
+    </div>
+  
+    
+    <div class="footer-more">
+      
+        <a target="_blank" rel="noopener" href="https://github.com/zchengsite/hexo-theme-oranges">Theme by Oranges | Powered by Hexo</a>
+        
+    </div>
+  
+  
+</div>
+
+      </div>
+
+      <div class="tools-bar">
+        <div class="back-to-top tools-bar-item hidden">
+  <a href="javascript: void(0)">
+    <i class="iconfont icon-chevronup"></i>
+  </a>
+</div>
+
+
+<script src="/js/backtotop.js"></script>
+
+
+
+        
+  <div class="search-icon tools-bar-item" id="search-icon">
+    <a href="javascript: void(0)">
+      <i class="iconfont icon-search"></i>
+    </a>
+  </div>
+
+  <div class="search-overlay hidden">
+    <div class="search-content" tabindex="0">
+      <div class="search-title">
+        <span class="search-icon-input">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-search"></i>
+          </a>
+        </span>
+        
+          <input type="text" class="search-input" id="search-input" placeholder="Search...">
+        
+        <span class="search-close-icon" id="search-close-icon">
+          <a href="javascript: void(0)">
+            <i class="iconfont icon-close"></i>
+          </a>
+        </span>
+      </div>
+      <div class="search-result" id="search-result"></div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    var inputArea = document.querySelector("#search-input")
+    var searchOverlayArea = document.querySelector(".search-overlay")
+
+    inputArea.onclick = function() {
+      getSearchFile()
+      this.onclick = null
+    }
+
+    inputArea.onkeydown = function() {
+      if(event.keyCode == 13)
+        return false
+    }
+
+    function openOrHideSearchContent() {
+      let isHidden = searchOverlayArea.classList.contains('hidden')
+      if (isHidden) {
+        searchOverlayArea.classList.remove('hidden')
+        document.body.classList.add('hidden')
+        // inputArea.focus()
+      } else {
+        searchOverlayArea.classList.add('hidden')
+        document.body.classList.remove('hidden')
+      }
+    }
+
+    function blurSearchContent(e) {
+      if (e.target === searchOverlayArea) {
+        openOrHideSearchContent()
+      }
+    }
+
+    document.querySelector("#search-icon").addEventListener("click", openOrHideSearchContent, false)
+    document.querySelector("#search-close-icon").addEventListener("click", openOrHideSearchContent, false)
+    searchOverlayArea.addEventListener("click", blurSearchContent, false)
+
+    var searchFunc = function (path, search_id, content_id) {
+      'use strict';
+      var $input = document.getElementById(search_id);
+      var $resultContent = document.getElementById(content_id);
+      $resultContent.innerHTML = "<ul><span class='local-search-empty'>First search, index file loading, please wait...<span></ul>";
+      $.ajax({
+        // 0x01. load xml file
+        url: path,
+        dataType: "xml",
+        success: function (xmlResponse) {
+          // 0x02. parse xml file
+          var datas = $("entry", xmlResponse).map(function () {
+            return {
+              title: $("title", this).text(),
+              content: $("content", this).text(),
+              url: $("url", this).text()
+            };
+          }).get();
+          $resultContent.innerHTML = "";
+
+          $input.addEventListener('input', function () {
+            // 0x03. parse query to keywords list
+            var str = '<ul class=\"search-result-list\">';
+            var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+            $resultContent.innerHTML = "";
+            if (this.value.trim().length <= 0) {
+              return;
+            }
+            // 0x04. perform local searching
+            datas.forEach(function (data) {
+              var isMatch = true;
+              var content_index = [];
+              if (!data.title || data.title.trim() === '') {
+                data.title = "Untitled";
+              }
+              var orig_data_title = data.title.trim();
+              var data_title = orig_data_title.toLowerCase();
+              var orig_data_content = data.content.trim().replace(/<[^>]+>/g, "");
+              var data_content = orig_data_content.toLowerCase();
+              var data_url = data.url;
+              var index_title = -1;
+              var index_content = -1;
+              var first_occur = -1;
+              // only match artiles with not empty contents
+              if (data_content !== '') {
+                keywords.forEach(function (keyword, i) {
+                  index_title = data_title.indexOf(keyword);
+                  index_content = data_content.indexOf(keyword);
+
+                  if (index_title < 0 && index_content < 0) {
+                    isMatch = false;
+                  } else {
+                    if (index_content < 0) {
+                      index_content = 0;
+                    }
+                    if (i == 0) {
+                      first_occur = index_content;
+                    }
+                    // content_index.push({index_content:index_content, keyword_len:keyword_len});
+                  }
+                });
+              } else {
+                isMatch = false;
+              }
+              // 0x05. show search results
+              if (isMatch) {
+                str += "<li><a href='" + data_url + "' class='search-result-title'>" + orig_data_title + "</a>";
+                var content = orig_data_content;
+                if (first_occur >= 0) {
+                  // cut out 100 characters
+                  var start = first_occur - 20;
+                  var end = first_occur + 80;
+
+                  if (start < 0) {
+                    start = 0;
+                  }
+
+                  if (start == 0) {
+                    end = 100;
+                  }
+
+                  if (end > content.length) {
+                    end = content.length;
+                  }
+
+                  var match_content = content.substr(start, end);
+
+                  // highlight all keywords
+                  keywords.forEach(function (keyword) {
+                    var regS = new RegExp(keyword, "gi");
+                    match_content = match_content.replace(regS, "<span class=\"search-keyword\">" + keyword + "</span>");
+                  });
+
+                  str += "<p class=\"search-result-abstract\">" + match_content + "...</p>"
+                }
+                str += "</li>";
+              }
+            });
+            str += "</ul>";
+            if (str.indexOf('<li>') === -1) {
+              return $resultContent.innerHTML = "<ul><span class='local-search-empty'>No result<span></ul>";
+            }
+            $resultContent.innerHTML = str;
+          });
+        },
+        error: function(xhr, status, error) {
+          $resultContent.innerHTML = ""
+          if (xhr.status === 404) {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The search.xml file was not found, please refer to：<a href='https://github.com/zchengsite/hexo-theme-oranges#configuration' target='_black'>configuration</a><span></ul>";
+          } else {
+            $resultContent.innerHTML = "<ul><span class='local-search-empty'>The request failed, Try to refresh the page or try again later.<span></ul>";
+          }
+        }
+      });
+      $(document).on('click', '#search-close-icon', function() {
+        $('#search-input').val('');
+        $('#search-result').html('');
+      });
+    }
+
+    var getSearchFile = function() {
+        var path = "/search.xml";
+        searchFunc(path, 'search-input', 'search-result');
+    }
+  </script>
+
+
+
+
+        
+  <div class="tools-bar-item theme-icon" id="switch-color-scheme">
+    <a href="javascript: void(0)">
+      <i id="theme-icon" class="iconfont icon-moon"></i>
+    </a>
+  </div>
+
+  
+<script src="/js/colorscheme.js"></script>
+
+
+
+
+
+        
+  
+    <div class="share-icon tools-bar-item">
+      <a href="javascript: void(0)" id="share-icon">
+        <i class="iconfont iconshare"></i>
+      </a>
+      <div class="share-content hidden">
+        
+          <a class="share-item" href="https://twitter.com/intent/tweet?text=' + C%2B%2B%20Allocator + '&url=' + http%3A%2F%2Fexample.com%2F2024%2F06%2F12%2FCpp-Allocator%2F + '" target="_blank" title="Twitter">
+            <i class="iconfont icon-twitter"></i>
+          </a>
+        
+        
+          <a class="share-item" href="https://www.facebook.com/sharer.php?u=http://example.com/2024/06/12/Cpp-Allocator/" target="_blank" title="Facebook">
+            <i class="iconfont icon-facebooksquare"></i>
+          </a>
+        
+      </div>
+    </div>
+  
+  
+<script src="/js/shares.js"></script>
+
+
+
+      </div>
+    </div>
+  </body>
+</html>
