@@ -1,51 +1,50 @@
 <html>
-    <head>
-        <title>SeeYUV Online</title>
-        <link rel="icon" href="icon/SeeYUVLogo.png" sizes="32x32">
-        <script src="js/loadyuv.js"></script>
-    </head>
-    <body onload="showrgb()">
-        <a href="http://www.intel.com">
-            <img src="images/intellogo.png" height="61" width="150"/>
-        </a>
-        <h1>SeeYUV Online</h1>
-        <hr/>
-        <br/>
-        <table>
-            <tr>
-                <td>Y</td>
-                <td><input id="iny" type="range" max="255" min="0" onchange="showrgb()"/></td>
-                <td><input id="texty" type="text" max="255" min="0" onkeyup="last(this)"/></td>
-            </tr>
-            <tr>
-                <td>U</td>
-                <td><input id="inu" type="range" max="255" min="0" onchange="showrgb()"/></td>
-                <td><input id="textu" type="text" max="255" min="0" onkeyup="last(this)"/></td>
-            </tr>
-            <tr>
-                <td>V</td>
-                <td><input id="inv" type="range" max="255" min="0" onchange="showrgb()"/></td>
-                <td><input id="textv" type="text" max="255" min="0" onkeyup="last(this)"/></td>
-            </tr>
-        </table>
-        <canvas id="RGB" width="300" height="300"></canvas>
-        <br/>
-        <table width="300">
-            <tr>
-                <td style="width:40;text-align: right;color:red">R</td>
-                <td id="rv" style="width:60;text-align: left;color:red">100</td>
-                <td style="width:40;text-align: right;color:green">G</td>
-                <td id="gv" style="width:60;text-align: left;color:green">30</td>
-                <td style="width:40;text-align: right;color:blue">B</td>
-                <td id="bv" style="width:60;text-align: left;color:blue">3</td>
-            </tr>
-        </table>
-        <hr/>
-        We are now working in progress. Any problem please contact 
-        <a href="mailto:zebing.bai@intel.com?Subject=SeeYUV%20feedback">Bai, Zebing</a>
-        <br/>
-        <a href="https://en.wikipedia.org/wiki/YCbCr">
-            <img src="icon/SeeYUVLogo.png" height="64" width="64">
-        </a>
-    </body>
+
+<head>
+    <title>SeeYUV Online</title>
+    <link rel="icon" href="icon/SeeYUVLogo.png" sizes="32x32">
+    <script src="js/loadyuv.js"></script>
+</head>
+
+<body onload="show_rgb()">
+    <a href="http://www.intel.com">
+        <img src="images/intellogo.png" height="61" width="150" />
+    </a>
+    <h1>SeeYUV Online</h1>
+    <hr />
+    <br />
+    <table>
+        <tr>
+            <td>Y</td>
+            <td><input id="iny" type="range" max="255" min="0" onchange="show_rgb()" /></td>
+            <td><input id="texty" type="text" max="255" min="0" onkeyup="last(this, 0)" /></td>
+            <td style="width:40;text-align: right;color:red">R</td>
+            <td><input id="inr" type="range" max="255" min="0" onchange="show_yuv()" /></td>
+            <td><input id="textr" type="text" max="255" min="0" onkeyup="last(this, 1)" /></td>
+        </tr>
+        <tr>
+            <td>U</td>
+            <td><input id="inu" type="range" max="255" min="0" onchange="show_rgb()" /></td>
+            <td><input id="textu" type="text" max="255" min="0" onkeyup="last(this, 0)" /></td>
+            <td style="width:40;text-align: right;color:green">G</td>
+            <td><input id="ing" type="range" max="255" min="0" onchange="show_yuv()" /></td>
+            <td><input id="textg" type="text" max="255" min="0" onkeyup="last(this, 1)" /></td>
+        </tr>
+        <tr>
+            <td>V</td>
+            <td><input id="inv" type="range" max="255" min="0" onchange="show_rgb()" /></td>
+            <td><input id="textv" type="text" max="255" min="0" onkeyup="last(this, 0)" /></td>
+            <td style="width:40;text-align: right;color:blue">B</td>
+            <td><input id="inb" type="range" max="255" min="0" onchange="show_yuv()" /></td>
+            <td><input id="textb" type="text" max="255" min="0" onkeyup="last(this, 1)" /></td>
+        </tr>
+    </table>
+    <canvas id="RGB" width="300" height="300"></canvas>
+    <br />
+    <p></p>
+    <a href="https://en.wikipedia.org/wiki/YCbCr">
+        <img src="icon/SeeYUVLogo.png" height="64" width="64">
+    </a>
+</body>
+
 </html>
